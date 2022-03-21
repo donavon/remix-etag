@@ -32,7 +32,7 @@ We use the table below to determine if there is a match based on `options.match`
 | W/"12345" | "12345"         | ❌                | ✅               |
 | "12345"   | "12345"         | ✅                | ✅               |
 
-## Example
+## Example Code
 
 Here is an example `handleRequest` from within `entry.server.tsx`. Import `remix-etag` and use it to set the `ETag` header.
 
@@ -60,6 +60,41 @@ export default function handleRequest(
   });
   return etag({ request, response });
 }
+```
+
+## Example HTTP Session
+
+If this is the first time on a website, you might send the following headers.
+
+```
+Host: hello-world.example.com
+```
+
+And the server might respond with the following headers.
+
+```
+Status Code: 200
+cache-control: private, no-cache, max-age=0, must-revalidate
+content-type: text/html; charset=utf-8
+etag: W/"4653-YRKtG4JGj5vQch6mw9SBl10xaoY"
+
+<html><body>Hello World!</body></html>
+```
+
+Then, if you were to revisit the same site, you would send the following headers. Note that the `If-None-Match` header is set to the value that was initially returned in the `ETag` header.
+
+```
+Host: hello-world.example.com
+If-None-Match: W/"4653-YRKtG4JGj5vQch6mw9SBl10xaoY"
+```
+
+If the site hasn't changed, the server will respond with a `304 Not Modified` status code and _without_ a body. The browser would then render the cached copy of the response.
+
+```
+Status Code: 304
+cache-control: private, no-cache, max-age=0, must-revalidate
+content-type: text/html; charset=utf-8
+etag: W/"4653-YRKtG4JGj5vQch6mw9SBl10xaoY"
 ```
 
 ## Getting Started
