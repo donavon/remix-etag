@@ -32,6 +32,8 @@ We use the table below to determine if there is a match based on `options.match`
 | W/"12345" | "12345"         | ❌                | ✅               |
 | "12345"   | "12345"         | ✅                | ✅               |
 
+✅ = Match — A 304 will be sent. ❌ = No match — A 200 will be sent.
+
 ## Example Code
 
 Here is an example `handleRequest` from within `entry.server.tsx`. Import `remix-etag` and use it to set the `ETag` header.
@@ -110,6 +112,21 @@ or
 ```
 yarn add remix-etag
 ```
+
+## FAQ
+
+Q: What is the `ETag` header?
+A: The `ETag` header is a unique identifier for a resource. It is used to determine if the resource has changed since the last time it was requested.
+
+Q: What is the `If-None-Match` header?
+A: The `If-None-Match` header is used to determine if the resource has changed since the last time it was requested.
+
+Q: What is the `weak` option?
+A: The `weak` option determines if the `ETag` header is a weak or strong `ETag`. A weak `ETag` is a unique identifier for a resource. A strong `ETag` is a unique identifier for a resource that is based on the content of the resource.
+
+## Troubleshooting
+
+Are you not seeing 304 in your Dev Tools? Are you on CloudFlare? if so, read [Using ETag Headers with Cloudflare](https://support.cloudflare.com/hc/en-us/articles/218505467-Using-ETag-Headers-with-Cloudflare). This was happening to me until I disabled Email Obfuscation and Automatic HTTPS Rewrites.
 
 ## License
 
