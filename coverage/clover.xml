@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1647854301042" clover="3.2.0">
+  <project timestamp="1647854301042" name="All files">
+    <metrics statements="34" coveredstatements="34" conditionals="25" coveredconditionals="25" methods="5" coveredmethods="5" elements="64" coveredelements="64" complexity="0" loc="34" ncloc="34" packages="1" files="1" classes="1"/>
+    <file name="index.ts" path="/Users/donavon/Projects/remix-etag/src/index.ts">
+      <metrics statements="34" coveredstatements="34" conditionals="25" coveredconditionals="25" methods="5" coveredmethods="5"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="31" count="4" type="stmt"/>
+      <line num="33" count="3" type="stmt"/>
+      <line num="35" count="1" type="stmt"/>
+      <line num="40" count="6" type="cond" truecount="1" falsecount="0"/>
+      <line num="42" count="4" type="cond" truecount="1" falsecount="0"/>
+      <line num="43" count="2" type="stmt"/>
+      <line num="45" count="2" type="stmt"/>
+      <line num="50" count="1" type="stmt"/>
+      <line num="51" count="29" type="cond" truecount="1" falsecount="0"/>
+      <line num="54" count="19" type="cond" truecount="2" falsecount="0"/>
+      <line num="55" count="19" type="cond" truecount="2" falsecount="0"/>
+      <line num="56" count="19" type="cond" truecount="2" falsecount="0"/>
+      <line num="57" count="57" type="stmt"/>
+      <line num="58" count="19" type="stmt"/>
+      <line num="71" count="1" type="stmt"/>
+      <line num="72" count="15" type="stmt"/>
+      <line num="73" count="15" type="stmt"/>
+      <line num="74" count="15" type="stmt"/>
+      <line num="76" count="15" type="stmt"/>
+      <line num="78" count="15" type="stmt"/>
+      <line num="79" count="15" type="cond" truecount="4" falsecount="0"/>
+      <line num="80" count="15" type="stmt"/>
+      <line num="81" count="15" type="stmt"/>
+      <line num="83" count="15" type="stmt"/>
+      <line num="87" count="15" type="cond" truecount="1" falsecount="0"/>
+      <line num="89" count="6" type="cond" truecount="1" falsecount="0"/>
+      <line num="92" count="6" type="stmt"/>
+      <line num="93" count="6" type="stmt"/>
+      <line num="95" count="6" type="stmt"/>
+      <line num="96" count="6" type="stmt"/>
+      <line num="98" count="6" type="stmt"/>
+      <line num="99" count="6" type="stmt"/>
+      <line num="101" count="6" type="cond" truecount="2" falsecount="0"/>
+    </file>
+  </project>
+</coverage>
