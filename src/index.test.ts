@@ -68,6 +68,16 @@ describe('misc', () => {
   test("strong and weak hashes differ only by the 'W/' prefix", () => {
     expect(strongHash).toBe(weakHash.replace(/^W\//, ''));
   });
+  test("if a Cache-Control header already exists, don't override", async () => {
+    const response = new Response(data, {
+      headers: { 'cache-control': 'public, max-age=3600' },
+    });
+    const request = defaultRequest;
+    const result = await etag({ response, request });
+
+    expect(result).toBe(response);
+    expect(result.headers.get('cache-control')).toBe('public, max-age=3600');
+  });
 });
 
 describe('if request.method is something other than GET or HEAD', () => {

@@ -6,6 +6,7 @@ export type EtagOptions = {
    * Defaults to "private, no-cache, max-age=0, must-revalidate".
    * If you don't want to send the `Cache-Control` header, set `cacheControl` to `null`.
    * See also `maxAge`.
+   * Note that if a `Cache-Control` header is already set, it will NOT be overwritten.
    */
   cacheControl?: string | null;
 
@@ -86,7 +87,10 @@ export const etag = async ({
     (isResponseHtml || isResponseJson);
   if (!shouldComputeETag) return response;
 
-  if (cacheControl) headers.set('Cache-Control', cacheControl);
+  const hasCacheControl = headers.has('Cache-Control');
+  if (!hasCacheControl && cacheControl) {
+    headers.set('Cache-Control', cacheControl);
+  }
 
   // We clone the response so we can read the body, which is a one-time operation.
   const clonedResponse = response.clone();
