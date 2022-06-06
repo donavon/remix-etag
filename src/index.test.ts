@@ -3,18 +3,24 @@ import { createEtag } from './eTag';
 import { etag } from '.';
 import crypto from 'crypto';
 import * as util from 'util';
+
 // This installs globals such as "fetch", "Response", "Request" and "Headers".
 installGlobals();
 
 let data = 'Hello World';
-let strongHash: string = `"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"`;
-let weakHash: string = `W/"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"`;
+let strongHash: string;
+let weakHash: string;
+let strongPostRequest: () => Promise<Request>;
+let strongRequest: () => Promise<Request>;
+let weakRequest: () => Promise<Request>;
 
 beforeAll(async () => {
+  // Mock TextEncoder
   Object.defineProperty(window, 'TextEncoder', {
     writable: true,
     value: util.TextEncoder,
   });
+  // Mock crypto.subtle.digest
   Object.defineProperty(global.self, 'crypto', {
     value: {
       subtle: {
@@ -32,47 +38,53 @@ beforeAll(async () => {
     },
   });
 
-  data = 'Hello World';
+  // init
   strongHash = await createEtag(data);
   weakHash = await createEtag(data, { weak: true });
-});
 
-const strongPostRequest = new Request('/', {
-  method: 'POST',
-  headers: {
-    'if-none-match': strongHash,
-  },
-});
-
-const strongRequest = new Request('/', {
-  method: 'GET',
-  headers: {
-    'if-none-match': strongHash,
-  },
-});
-
-const weakRequest = new Request('/', {
-  method: 'GET',
-  headers: {
-    'if-none-match': weakHash,
-  },
+  weakRequest = async () =>
+    new Request('/', {
+      method: 'GET',
+      headers: {
+        'if-none-match': await createEtag(data, {
+          weak: true,
+        }),
+      },
+    });
+  strongRequest = async () =>
+    new Request('/', {
+      method: 'GET',
+      headers: {
+        'if-none-match': await createEtag(data),
+      },
+    });
+  strongPostRequest = async () =>
+    new Request('/', {
+      method: 'POST',
+      headers: {
+        'if-none-match': await createEtag(data),
+      },
+    });
 });
 
 const defaultRequest = new Request('/', {
   method: 'GET',
 });
 
-const testThatNothingHappened = (request: Request, response: Response) => {
+const testThatNothingHappened = (
+  request: () => Promise<Request>,
+  response: Response
+) => {
   test('returns the original response', async () => {
-    const result = await etag({ response, request });
+    const result = await etag({ response, request: await request() });
     expect(result).toBe(response);
   });
   test('does not add an ETag header', async () => {
-    const result = await etag({ response, request });
+    const result = await etag({ response, request: await request() });
     expect(result.headers.get('etag')).toBeNull();
   });
   test('does not add a Cache-Control header', async () => {
-    const result = await etag({ response, request });
+    const result = await etag({ response, request: await request() });
     expect(result.headers.get('cache-control')).toBeNull();
   });
 };
@@ -109,16 +121,22 @@ describe('misc', () => {
 });
 
 describe('if request.method is something other than GET or HEAD', () => {
-  testThatNothingHappened(strongPostRequest, new Response());
+  testThatNothingHappened(
+    async () => await strongPostRequest(),
+    new Response()
+  );
 });
 
 describe('if response.status is something other than 200', () => {
-  testThatNothingHappened(strongRequest, new Response(data, { status: 404 }));
+  testThatNothingHappened(
+    async () => await strongRequest(),
+    new Response(data, { status: 404 })
+  );
 });
 
 describe('if response.contentType is something other than html or json', () => {
   testThatNothingHappened(
-    strongRequest,
+    async () => await strongRequest(),
     new Response(data, { headers: { 'content-type': 'text/plain' } })
   );
 });
@@ -127,13 +145,15 @@ describe('if options.weak is true', () => {
   const options = { weak: true };
 
   describe('and sent a weak request', () => {
-    const request = weakRequest;
-
     test('returns a new 304 response with a weak etag and cache-control headers', async () => {
       const response = new Response(data, {
         headers: { 'content-type': 'text/html' },
       });
-      const result = await etag({ response, request, options });
+      const result = await etag({
+        response,
+        request: await weakRequest(),
+        options,
+      });
 
       expect(result).not.toBe(response);
       expect(result.status).toBe(304);
@@ -145,13 +165,15 @@ describe('if options.weak is true', () => {
   });
 
   describe('and sent a strong request', () => {
-    const request = strongRequest;
-
     test('returns a new 304 response with a weak etag and cache-control headers', async () => {
       const response = new Response(data, {
         headers: { 'content-type': 'text/html' },
       });
-      const result = await etag({ response, request, options });
+      const result = await etag({
+        response,
+        request: await strongRequest(),
+        options,
+      });
 
       expect(result).not.toBe(response);
       expect(result.status).toBe(304);
@@ -184,13 +206,15 @@ describe('if options.weak is false (i.e. use strong hash)', () => {
   const options = { weak: false };
 
   describe('and sent a weak request', () => {
-    const request = weakRequest;
-
     test('returns a the original response with a strong etag and cache-control headers', async () => {
       const response = new Response(data, {
         headers: { 'content-type': 'text/html' },
       });
-      const result = await etag({ response, request, options });
+      const result = await etag({
+        response,
+        request: await weakRequest(),
+        options,
+      });
 
       expect(result).toBe(response);
       expect(result.status).toBe(200);
@@ -202,13 +226,15 @@ describe('if options.weak is false (i.e. use strong hash)', () => {
   });
 
   describe('and sent a strong request', () => {
-    const request = strongRequest;
-
     test('returns a new 304 response with a strong etag and cache-control headers', async () => {
       const response = new Response(data, {
         headers: { 'content-type': 'text/html' },
       });
-      const result = await etag({ response, request, options });
+      const result = await etag({
+        response,
+        request: await strongRequest(),
+        options,
+      });
 
       expect(result).not.toBe(response);
       expect(result.status).toBe(304);
