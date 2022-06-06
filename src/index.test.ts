@@ -1,13 +1,41 @@
 import { installGlobals } from '@remix-run/node';
-import computeEtag from 'etag';
+import { createEtag } from './eTag';
 import { etag } from '.';
-
+import crypto from 'crypto';
+import * as util from 'util';
 // This installs globals such as "fetch", "Response", "Request" and "Headers".
 installGlobals();
 
-const data = 'Hello World';
-const strongHash = computeEtag(data);
-const weakHash = computeEtag(data, { weak: true });
+let data = 'Hello World';
+let strongHash: string = `"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"`;
+let weakHash: string = `W/"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"`;
+
+beforeAll(async () => {
+  Object.defineProperty(window, 'TextEncoder', {
+    writable: true,
+    value: util.TextEncoder,
+  });
+  Object.defineProperty(global.self, 'crypto', {
+    value: {
+      subtle: {
+        digest: (algorithm: string, data: Uint8Array) => {
+          return new Promise(resolve =>
+            resolve(
+              crypto
+                .createHash(algorithm.toLowerCase().replace('-', ''))
+                .update(data)
+                .digest()
+            )
+          );
+        },
+      },
+    },
+  });
+
+  data = 'Hello World';
+  strongHash = await createEtag(data);
+  weakHash = await createEtag(data, { weak: true });
+});
 
 const strongPostRequest = new Request('/', {
   method: 'POST',
@@ -59,11 +87,11 @@ describe('misc', () => {
   test("weak hashes begin with 'W/'", () => {
     expect(weakHash).toMatch(/^W\//);
   });
-  test('computes the same strong hash for multiple calls', () => {
-    expect(computeEtag(data)).toBe(strongHash);
+  test('computes the same strong hash for multiple calls', async () => {
+    expect(await createEtag(data)).toBe(strongHash);
   });
-  test('computes a same weak hash for multiple calls', () => {
-    expect(computeEtag(data, { weak: true })).toBe(weakHash);
+  test('computes a same weak hash for multiple calls', async () => {
+    expect(await createEtag(data, { weak: true })).toBe(weakHash);
   });
   test("strong and weak hashes differ only by the 'W/' prefix", () => {
     expect(strongHash).toBe(weakHash.replace(/^W\//, ''));
