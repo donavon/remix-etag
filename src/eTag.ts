@@ -6,11 +6,7 @@ const entityTag = async (entity: string): Promise<string> => {
   const target = new TextEncoder().encode(entity);
   const hashBuffer = await crypto.subtle.digest('SHA-1', target);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray
-    .map(function(b) {
-      return b.toString(16).padStart(2, '0');
-    })
-    .join('');
+  const hashHex = hashArray.map(n => n.toString(16).padStart(2, '0')).join('');
 
   return `"${hashHex}"`;
 };
