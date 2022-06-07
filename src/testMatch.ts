@@ -1,4 +1,4 @@
-import computeETag from 'etag';
+import { createEtag } from './eTag';
 
 const stripLeadingWeak = (hash: string) => hash.replace(/^W\//, '');
 
@@ -30,13 +30,13 @@ type TestMatch = {
  * The raw `testMatch` function that could be used to compare the RemixContext.routeData and
  * return early without rendering the page if `true` is returned.
  */
-export const testMatch = ({
+export const testMatch = async ({
   request,
   text,
   headers,
   weak,
-}: TestMatch): boolean => {
-  const etagHash = computeETag(text, { weak });
+}: TestMatch): Promise<boolean> => {
+  const etagHash = await createEtag(text, { weak });
   headers.set('ETag', etagHash);
 
   const ifNoneMatch = request.headers.get('if-none-match');

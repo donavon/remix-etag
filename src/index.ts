@@ -41,6 +41,6 @@ export const etag = async ({
   const clonedResponse = response.clone();
   const body = await clonedResponse.text();
 
-  const isMatch = testMatch({ request, text: body, headers, weak });
+  const isMatch = await testMatch({ request, text: body, headers, weak });
   return isMatch ? new Response('', { status: 304, headers }) : response;
 };
