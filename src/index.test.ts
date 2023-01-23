@@ -88,13 +88,6 @@ describe('if response.status is something other than 200', () => {
   testThatNothingHappened(strongRequest, new Response(data, { status: 404 }));
 });
 
-describe('if response.contentType is something other than html or json', () => {
-  testThatNothingHappened(
-    strongRequest,
-    new Response(data, { headers: { 'content-type': 'text/plain' } })
-  );
-});
-
 describe('if options.weak is true', () => {
   const options = { weak: true };
 

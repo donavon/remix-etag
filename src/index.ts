@@ -22,14 +22,10 @@ export const etag = async ({
   const { cacheControl, weak } = mergeDefaultOptions(options);
 
   const { headers } = response;
-  const contentType = headers.get('content-type') ?? '';
-  const isResponseHtml = contentType.startsWith('text/html');
-  const isResponseJson = contentType.startsWith('application/json');
 
   const shouldComputeETag =
     (request.method === 'GET' || request.method === 'HEAD') &&
-    response.status === 200 &&
-    (isResponseHtml || isResponseJson);
+    response.status === 200;
   if (!shouldComputeETag) return response;
 
   const hasCacheControl = headers.has('Cache-Control');
